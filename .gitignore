@@ -112,3 +112,4 @@ outputs/
 results/
 checkpoints/
 wandb/
+my_local_data_dir/
