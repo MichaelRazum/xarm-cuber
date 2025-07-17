@@ -22,6 +22,7 @@ class XArmFollowerConfig(RobotConfig):
 
     # Robot configuration
     num_joints: int = 6
+    pos_tol: int = 3
     max_relative_target: float | None = None
 
     # Serial communication settings

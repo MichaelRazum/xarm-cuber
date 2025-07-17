@@ -99,7 +99,7 @@ class XArmFollower(Robot):
         else:
             gaol_pos = action
         # Send goal position to the arm
-        self.bus.write_positions(positions=gaol_pos, servo_runtime=self.config.servo_runtime)
+        self.bus.write_positions(positions=gaol_pos, servo_runtime=self.config.servo_runtime, pos_tol=self.config.pos_tol)
         # self.bus.sync_write("Goal_Position", goal_pos)
         return {motor: val for motor, val in goal_pos.items()}
     

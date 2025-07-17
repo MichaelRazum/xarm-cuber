@@ -17,7 +17,7 @@ class XArmBus:
     def __init__(self, config: XArmFollowerConfig):
         self.config = config
         self.xarm = None
-        self._last_positions = [500] * config.num_joints
+        self._last_positions = [-10] * config.num_joints
         
     def connect(self):
         if self.xarm is not None:
@@ -78,12 +78,13 @@ class XArmBus:
                           for i, pos in enumerate(positions)}
         return joint_positions
 
-    def write_positions(self, positions: Dict[str, float], servo_runtime: int | None = None):
+    def write_positions(self, positions: Dict[str, float], servo_runtime: int | None = None, pos_tol=0):
         for joint in positions:
             pos = positions[joint]
             motor_id = self.config.joint2motorid[joint]
             limits = self.config.joint_limits[joint]
             pos = int(max(limits["min"], min(limits["max"], pos)))
             print(f'runining {motor_id}, {pos}, {servo_runtime}')
-            self.xarm.run(motor_id, pos, servo_runtime)
-            self._last_positions[motor_id-1] = pos
+            if abs(self._last_positions[motor_id-1] - pos) > pos_tol:
+                self.xarm.run(motor_id, pos, servo_runtime)
+                self._last_positions[motor_id-1] = pos
