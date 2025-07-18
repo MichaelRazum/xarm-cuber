@@ -32,7 +32,7 @@ class XArmFollower(Robot):
 
     @property
     def _motors_ft(self) -> dict[str, type]:
-        return {joint: float for joint in self.config.joint2motorid}
+        return {f"{joint}.pos": float for joint in self.config.joint2motorid}
 
     @property
     def _cameras_ft(self) -> dict[str, tuple]:
@@ -77,7 +77,7 @@ class XArmFollower(Robot):
     def get_observation(self) -> dict[str, Any]:
         start = time.perf_counter()
         obs_dict = self.bus.read_positions()
-        obs_dict = {motor: val for motor, val in obs_dict.items()}
+        obs_dict = {f"{motor}.pos": val for motor, val in obs_dict.items()}
         dt_ms = (time.perf_counter() - start) * 1e3
         logger.debug(f"{self} read state: {dt_ms:.1f}ms")
 
@@ -96,12 +96,10 @@ class XArmFollower(Robot):
             present_pos = self.bus.read_positions()
             goal_present_pos = {key: (g_pos, present_pos[key]) for key, g_pos in goal_pos.items()}
             goal_pos = ensure_safe_goal_position(goal_present_pos, self.config.max_relative_target)
-        else:
-            gaol_pos = action
+        
         # Send goal position to the arm
-        self.bus.write_positions(positions=gaol_pos, servo_runtime=self.config.servo_runtime, pos_tol=self.config.pos_tol)
-        # self.bus.sync_write("Goal_Position", goal_pos)
-        return {motor: val for motor, val in goal_pos.items()}
+        self.bus.write_positions(positions=goal_pos, servo_runtime=self.config.servo_runtime, pos_tol=self.config.pos_tol)
+        return {f"{motor}.pos": val for motor, val in goal_pos.items()}
     
     def disconnect(self):
         self.bus.disconnect()
