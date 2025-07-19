@@ -9,37 +9,73 @@ def print_open_ports():
     for port, desc, hwid in sorted(ports):
         print("{}: {} [{}]".format(port, desc, hwid))
 
+CTRL_A, CTRL_B, CTRL_C, CTRL_D = b"\x01", b"\x02", b"\x03", b"\x04"
+
 class BusServoSerial:
     def __init__(self, port='/dev/ttyUSB0',
                        remote_bus_server='bus_servo',
                        max_read_size=50,
-                       timeout=.01):
+                       raw_mode=True):
         self.max_read_size = max_read_size
         self.remote_bus_server=remote_bus_server
 
-        self.con = serial.Serial(port, baudrate=115200, timeout=timeout)
+        self.con = serial.Serial(port,
+                                 baudrate=115200,
+                                 timeout=0.1 if raw_mode else 0.01,
+                                 )
 
-        # Clear Console Cntrl-C
-        self.con.write(b'\x03')
+        self.con.write(CTRL_B)
         self.con.read(self.max_read_size)
+        self.con.write(CTRL_C)
+        self.con.read(self.max_read_size)
+        self.con.read(self.max_read_size)
+
+        self.raw_mode = raw_mode
+        if raw_mode:
+            self.enter_raw_mode()
 
     def __del__(self):
         self.con.close()
 
     def run_command(self, command):
-        self.con.read(size=self.max_read_size)
-        send_command = f'{self.remote_bus_server}.{command}\r\n'
-        self.con.write(send_command.encode())
-        res = self.parse_result(command)
+
+        if self.raw_mode:
+            send_command = f'print({self.remote_bus_server}.{command})\n'
+            self.con.write(send_command.encode() +  CTRL_D)
+            res = self.parse_raw_result()
+        else:
+            self.con.read(size=self.max_read_size)
+            send_command = f'{self.remote_bus_server}.{command}\r\n'
+            self.con.write(send_command.encode())
+            res = self.parse_result(command)
         return res
 
+    def enter_raw_mode(self):
+        self.con.write(CTRL_C)
+        time.sleep(0.01)
+        self.con.write(CTRL_A)
+        time.sleep(0.01)
+        self.con.read(self.max_read_size)
+
+    def _read_until(self, marker: bytes, timeout=0.2) -> str:
+        buf = bytearray()
+        t0 = time.time()
+        while marker not in buf:
+            n = self.con.in_waiting
+            if n:
+                chunk = self.con.read(n)
+                buf.extend(chunk)
+            if time.time() - t0 > timeout:
+                raise TimeoutError("Prompt not seen within %.1f s" % timeout)
+        return buf.decode(errors='ignore')
+
+
+    def parse_raw_result(self):
+        res = self.con.read_until(b'>')
+        return res[res.find(b'OK')+2:res.find(b'\r')].decode()
+
     def parse_result(self, command):
-        res = ''
-        for _ in range(100):
-            res += self.con.read(size=self.max_read_size).decode()
-            if '>>>' in res:
-                break
-            time.sleep(0.005)
+        res = self._read_until(b'>>>', timeout=0.2)
         return res[res.find(command) + len(command):].split('>>>')[0].replace('\r', '').replace('\n', '')
 
     def run(self, id, p, servo_run_time=1000):
