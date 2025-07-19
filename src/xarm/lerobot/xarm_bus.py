@@ -28,7 +28,6 @@ class XArmBus:
                     port=self.config.port,
                     remote_bus_server=self.config.remote_bus_server,
                     max_read_size=self.config.max_read_size,
-                    timeout=self.config.timeout
                 )
             elif self.config.connection_type == "http":
                 if not self.config.address:
@@ -70,7 +69,7 @@ class XArmBus:
         for id in motor_ids:
             self.xarm.unload(id)
 
-    @retry( tries=4, delay=0.03)
+    @retry( tries=10, delay=0.03)
     def read_positions(self) -> Dict[str, float]:
         positions = self.xarm.get_positions()
         self._last_positions = positions
@@ -84,7 +83,6 @@ class XArmBus:
             motor_id = self.config.joint2motorid[joint]
             limits = self.config.joint_limits[joint]
             pos = int(max(limits["min"], min(limits["max"], pos)))
-            print(f'runining {motor_id}, {pos}, {servo_runtime}')
             if abs(self._last_positions[motor_id-1] - pos) > pos_tol:
                 self.xarm.run(motor_id, pos, servo_runtime)
                 self._last_positions[motor_id-1] = pos

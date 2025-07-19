@@ -27,7 +27,6 @@ class XArmFollowerConfig(RobotConfig):
 
     # Serial communication settings
     baudrate: int = 115200
-    timeout: float = 0.01
     max_read_size: int = 50
     remote_bus_server: str = "bus_servo"
     
@@ -35,7 +34,7 @@ class XArmFollowerConfig(RobotConfig):
     joint_limits: Dict[str, Dict[str, float]] = field(default_factory=lambda: {
         "gripper": {"min": 0, "max": 1500},
         "joint_1": {"min": 0, "max": 1000},
-        "joint_2": {"min": 70, "max": 1000},# Special limit for joint 2
+        "joint_2": {"min": 0, "max": 1000},# Special limit for joint 2
         "joint_3": {"min": 0, "max": 1000},
         "joint_4": {"min": 0, "max": 1000},
         "joint_5": {"min": 0, "max": 1000},
@@ -55,5 +54,4 @@ class XArmFollowerConfig(RobotConfig):
     cameras: Dict[str, CameraConfig] = field(default_factory=dict)
     
     # Servo runtime settings
-    default_servo_runtime: int = 250
-    position_tolerance: int = 3
+    default_servo_runtime: int = 125
