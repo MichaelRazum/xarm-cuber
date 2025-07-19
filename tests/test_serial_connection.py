@@ -1,6 +1,8 @@
+import datetime
+
 import pytest
 
-from xarm.xarm_remote.bus_servo_serial import BusServoSerial, print_open_ports
+from xarm.xarm_remote.bus_servo_serial import BusServoSerial, print_open_ports, CTRL_D
 
 
 def test_list_all_serial_connections():
@@ -79,5 +81,23 @@ def test_default_position3():
     for n, v in  enumerate(l):
         servo.run(n+1, v, 3000)
 
+def test_parse_raw_result():
+    servo = BusServoSerial()
+    servo.enter_raw_mode()
+    ser = servo.con
+    cmd = b"print(bus_servo.get_position(1))\n" + CTRL_D
+    ser.write(cmd)
+    res = servo.parse_raw_result()
+    assert int(res) > 0
 
+@pytest.mark.parametrize('mode', [True, False])
+def test_performance(mode):
+    servo = BusServoSerial(raw_mode=mode)
+
+    start = datetime.datetime.utcnow()
+    for _ in range(10):
+        servo.get_positions()
+    end = datetime.datetime.utcnow()
+    frames = 10 / (end - start).total_seconds()
+    print(frames)
 
