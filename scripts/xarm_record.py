@@ -1,3 +1,4 @@
+import time
 from dataclasses import asdict
 from pprint import pformat
 import logging
@@ -77,6 +78,13 @@ def record(cfg: RecordConfig) -> LeRobotDataset:
             single_task=cfg.dataset.single_task,
             display_data=cfg.display_data,
         )
+
+        # Move robot to default position for the task
+        task_name = cfg.dataset.single_task or ""
+        log_say(f"Moving to default position for task: {task_name}", cfg.play_sounds)
+        robot.move_to_default_position(task_name)
+        teleop.move_to_default_position(task_name)
+        time.sleep(0.5)
 
         # Check if user wants to stop during reset
         if events["stop_recording"]:

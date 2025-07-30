@@ -52,3 +52,6 @@ class XArmLeader(Teleoperator):
     def disconnect(self) -> None:
         self.robot.disconnect()
 
+    def move_to_default_position(self, task: str = "") -> None:
+        self.robot.move_to_default_position(task)
+        self.robot.bus.disable_torque()

@@ -29,3 +29,7 @@ def test_get_action(xarm_leader):
     xarm_leader.connect()
     obs = xarm_leader.get_action()
     assert len(obs) == 6
+
+def test_default_position_tasks(xarm_follower):
+    xarm_follower.connect()
+    xarm_follower.move_to_default_position('Rotate top_left')

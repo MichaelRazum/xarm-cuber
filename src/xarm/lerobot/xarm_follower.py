@@ -101,6 +101,25 @@ class XArmFollower(Robot):
         self.bus.write_positions(positions=goal_pos, servo_runtime=self.config.servo_runtime, pos_tol=self.config.pos_tol)
         return {f"{motor}.pos": val for motor, val in goal_pos.items()}
     
+    def move_to_default_position(self, task: str = "") -> None:
+        """Move robot to task-specific default position."""
+        # Task-specific positions: [gripper, joint_1, joint_2, joint_3, joint_4, joint_5]
+        positions = {
+            'flip': [600, 500, 125, 500, 500, 500],
+            'Rotate top_left': [0, 500, 125, 500, 500, 500],
+            'Rotate cube left': [0, 500, 125, 500, 500, 500],
+        }
+
+        pwm_values = positions[task]
+        joints = ["gripper", "joint_1", "joint_2", "joint_3", "joint_4", "joint_5"]
+
+        # Send position 3 times for reliability
+        for _ in range(5):
+            action = {f"{joint}.pos": pwm for joint, pwm in zip(joints, pwm_values)}
+            self.send_action(action)
+            time.sleep(0.1)
+        logger.info(f"Moved to default position for task: {task or 'default'}")
+
     def disconnect(self):
         self.bus.disconnect()
         for cam in self.cameras.values():
