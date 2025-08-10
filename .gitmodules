@@ -1,3 +1,6 @@
 [submodule "thirdparty/lerobot"]
 	path = thirdparty/lerobot
 	url = https://github.com/huggingface/lerobot.git
+[submodule "thirdparty/rubikvision"]
+	path = thirdparty/rubikvision
+	url = https://github.com/MichaelRazum/rubikvision.git
