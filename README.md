@@ -7,11 +7,12 @@ Python project for controlling a HiWonder xArm to manipulate and solve a Rubik's
 <h3>Features</h3>
 
 - **Dual-process architecture**: Concurrent vision analysis and robot execution
-- **Computer vision**: Real-time cube detection, color classification, and state tracking  with rubicvision
+- **Computer vision**: Real-time cube detection, color classification, and state tracking  with rubikvision
 - **Learned policies**: SmolVLA or ACT
 - **Real-time visualization**: Rerun integration for live monitoring and debugging
 
 <h3>Installation</h3>
+
 ```bash
 # Clone with submodules
 git clone --recursive https://github.com/yourusername/xarm-cuber.git
@@ -40,6 +41,7 @@ python src/main.py \
 --resume=true \
 --policy.chunk_size=20 \
 --policy.n_action_steps=20
+
 ```
 
 <h3>Architecture</h3>
