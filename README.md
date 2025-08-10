@@ -28,7 +28,9 @@ pip install -e thirdparty/rubikvision
 ```
 
 <h3>Running the Solver</h3>
+
 ```bash
+
 # Run autonomous solver
 python src/main.py \
 --robot.cameras="$CAMERAS_CONFIG" \
